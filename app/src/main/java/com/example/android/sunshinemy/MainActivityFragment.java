@@ -1,8 +1,10 @@
 package com.example.android.sunshinemy;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -49,6 +51,20 @@ public class MainActivityFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    private void updateWeather() {
+        WeatherAsync weatherTask = new WeatherAsync();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = prefs.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        weatherTask.execute(location);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updateWeather();
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         inflater.inflate(R.menu.menu_fragment, menu);
@@ -60,9 +76,7 @@ public class MainActivityFragment extends Fragment {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                WeatherAsync weatherAsyncTask = new WeatherAsync();
-               weatherAsyncTask.execute("94043");
-
+                updateWeather();
                 return true;
 
             default:
@@ -94,14 +108,11 @@ public class MainActivityFragment extends Fragment {
         ListView listView = (ListView) rootview.findViewById(R.id.list_view);
         listView.setAdapter(mForecastAdapter);
 
-
-
         return rootview;
     }
 
     public class WeatherAsync extends AsyncTask<String, Void, String[]> {
 
-        public ArrayAdapter<String> mForecastAdapter;
         private static final String TAG = "JSONValue";
         private final String LOG_TAG = WeatherAsync.class.getSimpleName();
 
@@ -313,6 +324,17 @@ public class MainActivityFragment extends Fragment {
             return null;
         }
 
-        
+        @Override
+        protected void onPostExecute(String[] result) {
+            if (result != null) {
+                mForecastAdapter.clear();
+                for(String dayForecastStr : result) {
+                    mForecastAdapter.add(dayForecastStr);
+                }
+                // New data is back from the server.  Hooray!
+            }
+        }
+
+
     }
 }
