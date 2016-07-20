@@ -11,6 +11,12 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+
+    buildTypes.each {
+        it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', "\"aaf7a042726c3517d41db2153e167bcc\""
+    }
+
     buildTypes {
         release {
             minifyEnabled false

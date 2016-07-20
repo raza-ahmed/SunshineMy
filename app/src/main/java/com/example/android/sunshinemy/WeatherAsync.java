@@ -1,5 +1,6 @@
 package com.example.android.sunshinemy;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -13,17 +14,20 @@ import java.net.URL;
 /**
  * Created by ahmedraza on 20/07/16.
  */
-public class WeatherAsync extends AsyncTask<> {
+public class WeatherAsync extends AsyncTask<String, Void, Void> {
+    private static final String TAG = "JSONValue";
+    private final String LOG_TAG = WeatherAsync.class.getSimpleName();
 
 
 
     @Override
-    protected Object doInBackground(Object[] objects) {
+    protected Void doInBackground(String... params) {
 
 
-        /*Read Me
-            Networking code should be put in AsyncTask
-     */
+        // If there's no zip code, there's nothing to look up.  Verify size of params.
+        if (params.length == 0) {
+            return null;
+        }
 
 
 
@@ -35,11 +39,35 @@ public class WeatherAsync extends AsyncTask<> {
         // Will contain the raw JSON response as a string.
         String forecastJsonStr = null;
 
+        String format = "json";
+        String units = "metric";
+        int numDays = 7;
+
+
         try {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7&appid=APIKEY");
+            final String FORECAST_BASE_URL =
+                    "http://api.openweathermap.org/data/2.5/forecast/daily?";
+            final String QUERY_PARAM = "q";
+            final String FORMAT_PARAM = "mode";
+            final String UNITS_PARAM = "units";
+            final String DAYS_PARAM = "cnt";
+            final String APPID_PARAM = "APPID";
+
+            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                    .appendQueryParameter(QUERY_PARAM, params[0]) //params[0] refers to the first value of the three parameters entered in FetchWeatherTask
+                    //i.e. AsyncTask<String, Void, Void> the first String value parameter
+                    .appendQueryParameter(FORMAT_PARAM, format)
+                    .appendQueryParameter(UNITS_PARAM, units)
+                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                    .build();
+
+            URL url = new URL(builtUri.toString());
+
+            Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -67,7 +95,8 @@ public class WeatherAsync extends AsyncTask<> {
                 // Stream was empty.  No point in parsing.
                 return null;
             }
-            forecastJsonStr = buffer.toString();
+             forecastJsonStr = buffer.toString();
+            Log.v(TAG,"JSON return"+ forecastJsonStr);
         } catch (IOException e) {
             Log.e("MainActivityFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
@@ -85,7 +114,7 @@ public class WeatherAsync extends AsyncTask<> {
                 }
             }
         }
-        return null;
+    return null;
     }
 
 }
