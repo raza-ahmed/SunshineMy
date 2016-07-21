@@ -1,5 +1,6 @@
 package com.example.android.sunshinemy;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -38,6 +40,7 @@ import java.util.List;
 public class MainActivityFragment extends Fragment {
 
     public ArrayAdapter<String> mForecastAdapter;
+    public final static String EXTRA_MESSAGE = "com.example.android.sunshinemy";
 
 
 
@@ -107,6 +110,27 @@ public class MainActivityFragment extends Fragment {
 
         ListView listView = (ListView) rootview.findViewById(R.id.list_view);
         listView.setAdapter(mForecastAdapter);
+
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//                String forecast = mForecastAdapter.getItem(position);
+//                Intent intent = new Intent(getActivity(), DetailActivity.class)
+//                        .putExtra(Intent.EXTRA_TEXT, forecast);
+//                startActivity(intent);
+//            }
+//        });
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                String forecast = mForecastAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(EXTRA_MESSAGE, forecast);
+                startActivity(intent);
+            }
+        });
 
         return rootview;
     }
